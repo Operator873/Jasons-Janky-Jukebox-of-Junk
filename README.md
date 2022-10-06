@@ -4,6 +4,9 @@ My random repo for silly-ass scripts
 Take what you want. Add what you want. Make sure file titles are descriptive. :)
 
 # Half-assed file descriptions
+## Checkmk utilities
+`checkmk-factorio-agent.py` -- A Checkmk Agent plugin for obtaining Factorio's current version and reporting it via the Checkmk Agent.  
+`checkmk-factorio-serverside.py` -- The Checkmk server monitor for the Factorio version service check.  
 ## Dynamic DNS
 `google-dynamic-dns-checker.py` -- Fetches your current IP and updates the appropriate dynamic DNS domains. Set as cron that runs however often.  
 
