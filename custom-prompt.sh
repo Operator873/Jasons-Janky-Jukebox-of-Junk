@@ -5,6 +5,7 @@
 # Use ${DF} to return to terminal default (clear prior formating)
 # Use ${RC} for standard white on black
 # if statement changes prompt if user is root
+# To apply to all users (including root) drop into /etc/profile.d/
 
 # Colors used for the prompt.
 ## Text colors
