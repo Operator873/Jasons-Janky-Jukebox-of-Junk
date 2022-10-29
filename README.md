@@ -16,3 +16,6 @@ Take what you want. Add what you want. Make sure file titles are descriptive. :)
 ## MovieBot873 utilities
 `tv-json-builder.py` -- processes the provided directory recursively and builds a JSON file of your TV shows  
 `movie-json-builder.py` -- Processes the provided directory recursively and builds a JSON file of your movies.
+
+## Random shell scripts
+`custom-prompt.sh` Make your Command Prompt less boring and easier to modify  
