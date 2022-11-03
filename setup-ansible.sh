@@ -12,6 +12,10 @@ if [ $UID -ne 0 ]; then
 elif [ $# -eq 0 ]; then
   echo "Please provide desire ansible username. Example: ./this-script.sh ansible"
   exit 1
+elif [ -x ${MYANSIBLEKEY} ]; then
+  echo "Please set your Ansible user's pubkey as a varibale called MYANSIBLEKEY."
+  echo "Do this by executing: export MYANSIBLEKEY=\$(cat /home/yourAnsibleUser/.ssh/id_rsa.pub)}"
+  exit 1
 fi
 
 useradd -m -G wheel ${1}
