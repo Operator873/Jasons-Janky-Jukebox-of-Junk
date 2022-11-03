@@ -32,9 +32,9 @@ fi
 
 # Start creating .ssh directory and echo pubkey into authorized_keys file.
 # Set appropriate permissions and ownership
+echo "$MYKEY" > /tmp/setup_tmpfile
 sudo mkdir /home/${1}/.ssh
-sudo touch /home/${1}/.ssh/authorized_keys
-sudo echo "${MYKEY}" > /home/${1}/.ssh/authorized_keys
+sudo mv /tmp/setup_tmpfile /home/${1}/.ssh/authorized_keys
 sudo chmod 600 /home/${1}/.ssh/authorized_keys
 sudo chmod 700 /home/${1}/.ssh
 sudo chown -R ${1}:${1} /home/${1}/.ssh
