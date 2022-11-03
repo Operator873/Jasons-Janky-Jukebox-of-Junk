@@ -35,7 +35,7 @@ fi
 sudo mkdir /home/${1}/.ssh
 sudo chmod 700 /home/${1}/.ssh
 sudo touch /home/${1}/.ssh/authorized_keys
-sudo echo ${MYKEY} > /home/${1}/.ssh/authorized_keys
+sudo echo "${MYKEY}" > /home/${1}/.ssh/authorized_keys
 sudo chmod 600 authorized_keys
 sudo chown -R ${1}:${1} /home/${1}/.ssh
 
