@@ -41,10 +41,10 @@ UL='4'
 BLINK='5'
 
 # Remove formatting, return to Default
-DF='\e[0m'
+DF='\[\e[0m\]'
 
 # Regular color
-RC="\e[${BOLD};${WHITE}m"
+RC="\[\e[${BOLD};${WHITE}m\]"
 
 # Current user color (modify if root)
 if [ $UID -eq 0 ]
@@ -53,35 +53,35 @@ then
   # If you comment out any portion (ex the DT config) make sure to
   # remove the variable from the PS1 line
   ## This will add a gray date/time line above the prompt
-  DT="\e[${DIM};${WHITE}m\D{%x %X}${DF}\n"
+  DT="\[\e[${DIM};${WHITE}m\]\D{%x %X}${DF}\n"
 
   ## Configure the username part of the prompt
-  UC="\e[${BOLD};${YELLOW};${BGRED}m\u"
+  UC="\[\e[${BOLD};${YELLOW};${BGRED}m\]\u"
 
   ## Configure the @hostname portion of prompt
-  HC="\e[${BOLD};${WHITE};${BGRED}m@\h:"
+  HC="\[\e[${BOLD};${WHITE};${BGRED}m\]@\h:"
 
   ## Configure the path information
-  FQP="\e[${BOLD};${CYAN};${BGRED}m\w"
+  FQP="\[\e[${BOLD};${CYAN};${BGRED}m\]\w"
 
   ## Build the actual prompt.
-  PS1="${DT}${RC}[${UC}${HC}${DF}${FQP}${DF}] # "
+  PS1="${DT}${RC}[${UC}${HC}${DF}${FQP}${DF}]# "
 else
   # Prompt for everyone else
   # If you comment out any portion (ex the DT config) make sure to
   # remove the variable from the PS1 line
   ## This will add a gray date/time line above the prompt
-  DT="\e[${DIM};${WHITE}m\D{%x %X}${DF}\n"
+  DT="\[\e[${DIM};${WHITE}m\]\D{%x %X}${DF}\n"
 
   ## Configure the username part of the prompt
-  UC="\e[${BOLD};${GREEN}m\u"
+  UC="\[\e[${BOLD};${GREEN}m\]\u"
 
   ## Configure the @hostname portion of prompt
-  HC="\e[${BOLD};${BLUE}m\h"
+  HC="\[\e[${BOLD};${BLUE}m\]\h"
 
   ## Configure the path information
-  FQP="\e[${CYAN}m\w"
+  FQP="\[\e[${CYAN}m\]\w"
 
   ## Build the actual prompt.
-  PS1="${DT}${RC}[${UC}@${HC}${RC}:${FQP}${DF}] $ "
+  PS1="${DT}${RC}[${UC}@${HC}${RC}:${FQP}${DF}]$ "
 fi
