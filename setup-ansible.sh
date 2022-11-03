@@ -33,10 +33,10 @@ fi
 # Start creating .ssh directory and echo pubkey into authorized_keys file.
 # Set appropriate permissions and ownership
 sudo mkdir /home/${1}/.ssh
-sudo chmod 700 /home/${1}/.ssh
 sudo touch /home/${1}/.ssh/authorized_keys
 sudo echo "${MYKEY}" > /home/${1}/.ssh/authorized_keys
-sudo chmod 600 authorized_keys
+sudo chmod 600 /home/${1}/.ssh/authorized_keys
+sudo chmod 700 /home/${1}/.ssh
 sudo chown -R ${1}:${1} /home/${1}/.ssh
 
 echo "User ${1} sucessfully created and SSH key added."
