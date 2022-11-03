@@ -44,4 +44,6 @@ echo "User ${1} sucessfully created and SSH key added."
 
 echo "${1} ALL=(ALL) NOPASSWD:ALL" > /tmp/setup_sudoer
 sudo mv /tmp/setup_sudoer /etc/sudoers.d/${1}
+sudo chmod 644 /etc/sudoers.d/${1}
+sudo chown root:root /etc/sudoers.d/${1}
 echo "sudoers.d drop-in added."
