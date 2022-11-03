@@ -14,7 +14,7 @@ elif [ $# -eq 0 ]; then
   # Check a username was provided
   echo "Please provide desire ansible username. Example: ./this-script.sh ansible"
   exit 1
-elif [ -x ${MYKEY} ]; then
+elif [ -x "${MYKEY}" ]; then
   # Check the pubkey was stored as a system variable
   echo "Please set your Ansible user's pubkey as a varibale called MYANSIBLEKEY."
   echo "Do this by executing: export MYANSIBLEKEY=\$(cat /home/yourAnsibleUser/.ssh/id_rsa.pub)}"
@@ -34,6 +34,7 @@ fi
 # Set appropriate permissions and ownership
 sudo mkdir /home/${1}/.ssh
 sudo chmod 700 /home/${1}/.ssh
+sudo touch /home/${1}/.ssh/authorized_keys
 sudo echo ${MYKEY} > /home/${1}/.ssh/authorized_keys
 sudo chmod 600 authorized_keys
 sudo chown -R ${1}:${1} /home/${1}/.ssh
