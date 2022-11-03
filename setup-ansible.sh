@@ -40,3 +40,6 @@ sudo chmod 700 /home/${1}/.ssh
 sudo chown -R ${1}:${1} /home/${1}/.ssh
 
 echo "User ${1} sucessfully created and SSH key added."
+
+sudo echo "${1} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${1}
+echo "sudoers.d drop-in added."
