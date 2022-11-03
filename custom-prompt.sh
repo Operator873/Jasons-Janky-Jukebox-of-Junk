@@ -1,37 +1,34 @@
 #!/usr/bin/env bash
 
-######## Prompt editing
+######## Prompt editing ##########
+# Format should be \e[<face>;<color>;<bgcolor>m<Following text...>
+# Use ${DF} to return to terminal default (clear prior formating)
+# Use ${RC} for standard white on black
+# if statement changes prompt if user is root
+# To apply to all users (including root) drop into /etc/profile.d/
 
 # Colors used for the prompt.
-## Regular text color
-
-# BLACK
+## Text colors
 BLACK='30'
-## Background color
-BGBLACK='40'
-# RED
 RED='31'
-BGRED='41'
-# GREEN
 GREEN='32'
-BGGREEN='42'
-# YELLOW
 YELLOW='33'
-BGYELLOW='43'
-# BLUE
 BLUE='34'
-BGBLUE='44'
-# AGENTA
 AGENTA='35'
-BGAGENTA='45'
-# CYAN
 CYAN='36'
-BGCYAN='46'
-# WHITE
 WHITE='37'
+
+## Background colors
+BGBLACK='40'
+BGRED='41'
+BGGREEN='42'
+BGYELLOW='43'
+BGBLUE='44'
+BGAGENTA='45'
+BGCYAN='46'
 BGWHITE='47'
 
-# Other formatting
+## Font face
 ## Normal
 NORM='0'
 ## Bold
@@ -44,25 +41,47 @@ UL='4'
 BLINK='5'
 
 # Remove formatting, return to Default
-DF='\[\e[0m\]'
+DF='\e[0m'
 
 # Regular color
-RC="\[\e[${BOLD};${WHITE}m\]"
+RC="\e[${BOLD};${WHITE}m"
 
 # Current user color (modify if root)
 if [ $UID -eq 0 ]
 then
-  # root
-  UC="\[\e[${BOLD};${YELLOW};${BGRED}m\]\u"
-  DT="\[\e[${DIM};${WHITE}m\D{%x %X}${DF}\]\n"
-  HC="\[\e[${BOLD};${WHITE};${BGRED}m\]@\h:"
-  FQP="\[\e[${BOLD};${CYAN};${BGRED}m\]\w"
-  PS1="[${UC}${HC}${DF}${FQP}${DF}]# "
+  # Build special prompt for root
+  # If you comment out any portion (ex the DT config) make sure to
+  # remove the variable from the PS1 line
+  ## This will add a gray date/time line above the prompt
+  DT="\e[${DIM};${WHITE}m\D{%x %X}${DF}\n"
+
+  ## Configure the username part of the prompt
+  UC="\e[${BOLD};${YELLOW};${BGRED}m\u"
+
+  ## Configure the @hostname portion of prompt
+  HC="\e[${BOLD};${WHITE};${BGRED}m@\h:"
+
+  ## Configure the path information
+  FQP="\e[${BOLD};${CYAN};${BGRED}m\w"
+
+  ## Build the actual prompt.
+  PS1="${DT}${RC}[${UC}${HC}${DF}${FQP}${DF}] # "
 else
-  # user
-  DT="\[\e[${DIM};${WHITE}m\]\D{%x %X}${DF}\n"
-  FQP="\[\e[${CYAN}m\]\w"
-  HC="\[\e[${BOLD};${BLUE}m\]\h"
-  UC="\[\e[${BOLD};${GREEN}m\]\u"
-  PS1="[${UC}@${HC}${RC}:${FQP}${DF}]$ "
+  # Prompt for everyone else
+  # If you comment out any portion (ex the DT config) make sure to
+  # remove the variable from the PS1 line
+  ## This will add a gray date/time line above the prompt
+  DT="\e[${DIM};${WHITE}m\D{%x %X}${DF}\n"
+
+  ## Configure the username part of the prompt
+  UC="\e[${BOLD};${GREEN}m\u"
+
+  ## Configure the @hostname portion of prompt
+  HC="\e[${BOLD};${BLUE}m\h"
+
+  ## Configure the path information
+  FQP="\e[${CYAN}m\w"
+
+  ## Build the actual prompt.
+  PS1="${DT}${RC}[${UC}@${HC}${RC}:${FQP}${DF}] $ "
 fi
