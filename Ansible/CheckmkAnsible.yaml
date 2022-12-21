@@ -1,0 +1,51 @@
+---
+- hosts: "{{ target }}"
+
+  collections:
+    - tribe29.checkmk
+
+  tasks:
+    - name: "Creating hosts on Checkmk"
+      tribe29.checkmk.host:
+        server_url: "http://10.10.1.6"
+        site: "cmk"
+        automation_user: "automation"
+        automation_secret: "{{ password }}"
+        host_name: "{{ ansible_hostname }}"
+        attributes:
+          ipaddress: "{{ ansible_all_ipv4_addresses[0] }}"
+        folder: "/"
+        state: "present"
+
+    - name: "Activate all new hosts (only one will appear below)"
+      tribe29.checkmk.activation:
+        server_url: "http://10.10.1.6"
+        site: "cmk"
+        automation_user: "automation"
+        automation_secret: "{{ password }}"
+        force_foreign_changes: 'true'
+      run_once: "true"
+
+    - name: "Remove previous existing agent registration"
+      ansible.builtin.shell: cmk-agent-ctl delete-all
+
+    - name: "Register with cmk-agent-ctl"
+      ansible.builtin.shell: cmk-agent-ctl register --trust-cert --hostname {{ ansible_hostname }} --server 10.10.1.6 --site cmk  --user automation --password {{ password }}
+
+    - name: "Discovering services..."
+      tribe29.checkmk.discovery:
+        server_url: "http://10.10.1.6"
+        site: "cmk"
+        automation_user: "automation"
+        automation_secret: "{{ password }}"
+        host_name: "{{ ansible_hostname }}"
+        state: "fix_all"
+
+    - name: "Activate all service changes (only one will appear below)"
+      tribe29.checkmk.activation:
+        server_url: "http://10.10.1.6"
+        site: "cmk"
+        automation_user: "automation"
+        automation_secret: "{{ password }}"
+        force_foreign_changes: 'true'
+      run_once: "true"
