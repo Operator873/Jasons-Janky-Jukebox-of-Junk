@@ -8,7 +8,8 @@ Take what you want. Add what you want. Make sure file titles are descriptive. :)
 `checkmk-factorio-agent.py` -- A Checkmk Agent plugin for obtaining Factorio's current version and reporting it via the Checkmk Agent.  
 `checkmk-factorio-serverside.py` -- The Checkmk server monitor for the Factorio version service check.  
 ## Dynamic DNS
-`google-dynamic-dns-checker.py` -- Fetches your current IP and updates the appropriate dynamic DNS domains. Set as cron that runs however often.  
+`google-dynamic-dns-checker.py` -- Fetches your current IP and updates the appropriate dynamic DNS domains. Set as cron that runs however often.
+`cf-dyndns.py` -- Manages DNS records for Cloudflare. Requires user email and Global API Key from your profile.  
 
 ## Webhook example
 `random-webhook.py` -- A functional example of a Python powered webhook that can be expanded  
