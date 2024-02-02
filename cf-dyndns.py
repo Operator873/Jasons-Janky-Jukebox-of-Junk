@@ -26,6 +26,8 @@ def check_records(cf, records, current_ip):
         if current_ip == record["content"]:
             print(f"{record['name']} currently has correct IP. Skipping...")
             continue
+        elif record['type'] != "A":
+            continue
         else:
             data = {
                 "content": current_ip,
