@@ -11,12 +11,14 @@ def main():
     apikey = input("Enter your API key: ")
 
     # Process items in the directory
-    print("Requesting movie information from MovieDB...")
     inventory = fetch_movie_ids(full_path, apikey)
 
     # Add the movies to MovieBot873
     print("Processing results and adding to MovieBot873...")
     for item in tqdm(inventory):
+        if item == "None":
+            continue
+        
         if add_movie(item, apikey):
             print(f"Successfully added {item}")
 
