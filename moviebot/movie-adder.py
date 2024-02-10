@@ -76,12 +76,9 @@ def fetch_id(title, year, apikey):
         if data["success"] and len(data["results"]) > 0:
             info = data["results"][0]
             return info.get("invid")
-        else:
-            print(f"Failed to add: {query}")
-            print(json.dumps(data, indent=2))
-
     except Exception as e:
         print(f"Search for {title} failed! Dump follows: {str(e)} {data}")
+        raise SystemExit
 
 
 def add_movie(inv, apikey):
