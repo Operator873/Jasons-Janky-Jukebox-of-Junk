@@ -6,6 +6,8 @@ import requests
 
 
 def main():
+    counter = 0
+    skipped = 0
     # Obtain some facts
     full_path = input("Enter full path to movies to add: ")
     apikey = input("Enter your API key: ")
@@ -16,14 +18,13 @@ def main():
     # Add the movies to MovieBot873
     print("Processing results and adding to MovieBot873...")
     for item in tqdm(inventory):
-        if item == "None":
-            continue
-        
         if add_movie(item, apikey):
-            print(f"Successfully added {item}")
+            counter += 1
+        else:
+            skipped += 1
 
     # Terminate with feedback
-    print("Done!")
+    print(f"Done! {counter} items added. {skipped} items were skipped due to failures.")
 
 
 def fetch_movie_ids(directory, apikey):
@@ -42,10 +43,15 @@ def fetch_movie_ids(directory, apikey):
         try:
             title, year = item.split(" (")
             year, _e = year.split(").")
-            inv.append(str(fetch_id(title, year, apikey)))
+            id = fetch_id(title, year, apikey)
+            if id is None:
+                print(f"{item} failed to produce a TMDB ID. Skipping...")
+                continue
+
+            inv.append(str(id))
         except:
             # Fail with some noise... probably a badly formatted file name.
-            print(f"{item} failed!")
+            print(f"{item} failed to split cleanly! Check file name format.")
             continue
 
     return inv
