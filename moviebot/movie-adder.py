@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
+from tqdm import tqdm
 import os
-
 import requests
 
 
 def main():
     # Obtain some facts
     full_path = input("Enter full path to movies to add: ")
-    apikey = input("Enter your  API key: ")
+    apikey = input("Enter your API key: ")
 
     # Process items in the directory
     print("Requesting movie information from MovieDB...")
@@ -16,7 +16,7 @@ def main():
 
     # Add the movies to MovieBot873
     print("Processing results and adding to MovieBot873...")
-    for item in inventory:
+    for item in tqdm(inventory):
         if add_movie(item, apikey):
             print(f"Successfully added {item}")
 
@@ -26,20 +26,22 @@ def main():
 
 def fetch_movie_ids(directory, apikey):
     # Gather up all files in the provided directory (this is recursive)
+    print(f"Generating file list from {directory}")
     matches = []
     for root, dir, files in os.walk(directory):
-        for f in files:
+        for f in tqdm(files):
             matches.append(f)
 
     # Take the files and split them up on a required file name format
     # Filename: 'The Movie Title (1999).mkv'
+    print("Fetching TheMovieDB information...")
     inv = []
-    for item in matches:
+    for item in tqdm(matches):
         try:
             title, year = item.split(" (")
             year, _e = year.split(").")
             inv.append(str(fetch_id(title, year, apikey)))
-        except ValueError:
+        except:
             # Fail with some noise... probably a badly formatted file name.
             print(f"{item} failed!")
             continue
@@ -69,7 +71,6 @@ def fetch_id(title, year, apikey):
             print(f"{title} failed to add: {data}")
     except Exception as e:
         print(f"Search for {title} failed! Dump follows: {str(e)} {data}")
-        SystemExit
 
 
 def add_movie(inv, apikey):
