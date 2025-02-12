@@ -55,19 +55,13 @@ def fetch_id(title, year, apikey):
         if data["success"] and len(data["results"]) > 1:
             dupes = []
             for item in data["results"]:
-                if item["title"].lower() == title.lower() and item["year"] == year:
+                if item["title"].lower() == title.lower() and item["year"] == year and not item["image"].endswith("None"):
                     dupes.append(item)
 
             if len(dupes) > 1:
-                valid_dupes = []
                 count = 1
                 print("Multiple matches found!", file=sys.stdout)
                 for dupe in dupes:
-                    if dupe["year"] is None or dupe["image"].endswith("None"):
-                        continue
-                    valid_dupes.append(dupe)
-                
-                for dupe in valid_dupes:
                     print(f"Option {count}: {dupe['invid']} - {dupe['title']} ({dupe['year']}) - {dupe['image']}")
                     count += 1
                 choice = int(input("Which option is correct? ")) - 1
