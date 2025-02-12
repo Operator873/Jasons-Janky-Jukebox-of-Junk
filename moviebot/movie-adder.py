@@ -59,10 +59,15 @@ def fetch_id(title, year, apikey):
                     dupes.append(item)
 
             if len(dupes) > 1:
-                # print(json.dumps(dupes, indent=2))
+                valid_dupes = []
                 count = 1
                 print("Multiple matches found!", file=sys.stdout)
                 for dupe in dupes:
+                    if dupe["year"] is None or dupe["image"] is None:
+                        continue
+                    valid_dupes.append(dupe)
+                
+                for dupe in valid_dupes:
                     print(f"Option {count}: {dupe['invid']} - {dupe['title']} ({dupe['year']}) - {dupe['image']}")
                     count += 1
                 choice = int(input("Which option is correct? ")) - 1
