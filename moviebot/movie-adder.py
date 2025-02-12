@@ -2,7 +2,7 @@
 
 from tqdm import tqdm
 import os
-import json
+import sys
 import requests
 
 
@@ -49,14 +49,35 @@ def fetch_id(title, year, apikey):
     # Send the request to MovieBot873
     data = xmit(query, "get")
 
-    # Make sure we got something useful, and proceed.
+# Make sure we got something useful, and proceed.
     try:
-        if data["success"] and len(data["results"]) > 0:
+        dupes = []
+        if data["success"] and len(data["results"]) > 1:
+            for item in data.get("results"):
+                if item["title"].lower() == title.lower() and item["year"] == year:
+                    dupes.append(item)
+
+                if len(dupes) > 1:
+                    count = 1
+                    print("Multiple matches found!", file=sys.stdout)
+                    for dupe in dupes:
+                        print(
+                            f"Option {count}: {dupe['invid']} - {dupe['title']} ({dupe['year']}) - {dupe['image']}",
+                            file=sys.stdout,
+                        )
+                        count += 1
+                    choice = int(input("Which option is correct? ")) - 1
+                    info = dupes[choice]
+                else:
+                    info = dupes[0]
+        else:
             info = data["results"][0]
-            return info.get("invid")
+
+        return info.get("invid")
+    
     except Exception as e:
         print(f"Search for {title} failed! Dump follows: {str(e)} {data}")
-        raise SystemExit
+        raise SystemExit(1)
 
 
 def add_movie(inv, apikey):
