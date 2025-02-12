@@ -1,35 +1,35 @@
 #!/usr/bin/env python3
 
-from tqdm import tqdm
 import os
 import sys
-import requests
+
 import mysql.connector
+import requests
+from tqdm import tqdm
 
 # MySQL/MariaDB config
-HOST = "xxx.xxx.xxx.xxx" # The IP of your database. "localhost" is also acceptable
-USER = "myCoolUser" # The username to connect to the database with
-PASSWD = "123abc" # The password for the above user
-DBASE = "Plex" # The name of the database in MySQL/MariaDB to use
-TABLE = "Movies" # The name of the table within the database to use
+HOST = "xxx.xxx.xxx.xxx"  # The IP of your database. "localhost" is also acceptable
+USER = "myCoolUser"  # The username to connect to the database with
+PASSWD = "123abc"  # The password for the above user
+DBASE = "Plex"  # The name of the database in MySQL/MariaDB to use
+TABLE = "Movies"  # The name of the table within the database to use
 
 # Unattended. Set to True to handle duplicate matching
 AUTO = False
 
 # 873gear API key
-APIKEY = None # Replace with your API key for automated runs. (str)
+APIKEY = None  # Replace with your API key for automated runs. (str)
 
 # Movie Directory
-PATH = None # Replace with Fully Qualified Path to your movies for automated runs. (str)
+PATH = (
+    None  # Replace with Fully Qualified Path to your movies for automated runs. (str)
+)
 
 
 def connect_to_mysql():
     try:
         mydb = mysql.connector.connect(
-            host=HOST,
-            user=USER,
-            password=PASSWD,
-            database=DBASE
+            host=HOST, user=USER, password=PASSWD, database=DBASE
         )
         print("Database Connection successful!")
         return mydb
@@ -60,16 +60,21 @@ def fetch_movie_ids(directory, apikey):
             year, _e = year.split(").")
             id = fetch_id(title, year, apikey)
             if id is None:
-                print(f"{item} failed to produce a TMDB ID. Skipping...", file=sys.stdout)
+                print(
+                    f"{item} failed to produce a TMDB ID. Skipping...", file=sys.stdout
+                )
                 continue
 
             inv.append(str(id))
 
         except:
             # Fail with some noise... probably a badly formatted file name.
-            print(f"{item} failed to split cleanly! Check file name format.", file=sys.stdout)
+            print(
+                f"{item} failed to split cleanly! Check file name format.",
+                file=sys.stdout,
+            )
             continue
-    
+
     return inv
 
 
@@ -92,29 +97,29 @@ def fetch_id(title, year, apikey):
         if data["success"] and len(data["results"]) > 1:
             if AUTO:
                 return None
-            
+
             for item in data.get("results"):
-                if (
-                    item["title"].lower() == title.lower()
-                    and item["year"] == year
-                ):
+                if item["title"].lower() == title.lower() and item["year"] == year:
                     dupes.append(item)
-                
+
                 if len(dupes) > 1:
                     count = 1
                     print("Multiple matches found!", file=sys.stdout)
                     for dupe in dupes:
-                        print(f"Option {count}: {dupe['invid']} - {dupe['title']} ({dupe['year']}) - {dupe['image']}", file=sys.stdout)
+                        print(
+                            f"Option {count}: {dupe['invid']} - {dupe['title']} ({dupe['year']}) - {dupe['image']}",
+                            file=sys.stdout,
+                        )
                         count += 1
                     choice = int(input("Which option is correct? ")) - 1
                     info = dupes[choice]
                 else:
-                    info = dupes[0]        
+                    info = dupes[0]
         else:
             info = data["results"][0]
-        
+
         return info.get("invid")
-        
+
     except Exception as e:
         print(f"Search for {title} failed! Dump follows: {str(e)} {data}")
         raise SystemExit(1)
@@ -127,17 +132,24 @@ def add_movie(db, inv, apikey):
 
     c.execute(check, (inv,))
     exists = c.fetchone()
-    
+
     if not exists:
         query = {
             "query": "bot",
             "type": "movie",
             "invid": inv,
         }
-        
+
         data = xmit(query)
         info = data["results"][0]
-        values = (info["invid"], info["title"], info["image"], int(info["year"]), info["genres"], info["overview"])
+        values = (
+            info["invid"],
+            info["title"],
+            info["image"],
+            int(info["year"]),
+            info["genres"],
+            info["overview"],
+        )
         try:
             c.execute(insert, values)
             db.commit()
@@ -181,7 +193,7 @@ def check_table(db):
     c = db.cursor()
     try:
         c.execute(f"SELECT * FROM {TABLE} LIMIT 1")
-    
+
     except mysql.connector.Error as err:
         if err.errno == 1146:
             print(f"Movies database table '{TABLE}' not found! Creating in {DBASE}...")
@@ -217,7 +229,7 @@ def main():
     if AUTO and (not APIKEY or not PATH):
         print("Error! Set for automation but PATH and APIKEY are not set!")
         raise SystemExit(1)
-    
+
     if not PATH and not AUTO:
         PATH = input("Enter full path to movies to add: ")
 
@@ -228,7 +240,7 @@ def main():
     if not db:
         print("Unable to connect database!")
         raise SystemExit(1)
-    
+
     if not check_table(db):
         print("Failure occured locating the movies table!")
         raise SystemExit(1)
@@ -243,7 +255,7 @@ def main():
             counter += 1
         else:
             skipped += 1
-    
+
     db.close()
 
     # Terminate with feedback
