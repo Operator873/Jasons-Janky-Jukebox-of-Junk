@@ -71,7 +71,7 @@ def fetch_id(title, year, apikey):
                 return dupes[0]
             else:
                 return data["results"][0]
-        elif data["success"] and len(data["results"] == 1):
+        elif data["success"] and len(data["results"]) == 1:
             return data["results"][0]
         else:
             return None
