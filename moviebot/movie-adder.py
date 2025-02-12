@@ -66,15 +66,15 @@ def fetch_id(title, year, apikey):
                     print(f"Option {count}: {dupe['invid']} - {dupe['title']} ({dupe['year']}) - {dupe['image']}")
                     count += 1
                 choice = int(input("Which option is correct? ")) - 1
-                info = dupes[choice]
+                return dupes[choice]
             elif len(dupes) == 1:
-                info = dupes[0]
+                return dupes[0]
             else:
-                info = data["results"][0]
+                return data["results"][0]
+        elif data["success"] and len(data["results"] == 1):
+            return data["results"][0]
         else:
-            info = data["results"][0]
-
-        return info.get("invid")
+            return None
     
     except Exception as e:
         print(f"Search for {title} failed! Dump follows: {str(e)} {data}")
