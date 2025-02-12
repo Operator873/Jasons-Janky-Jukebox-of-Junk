@@ -53,10 +53,10 @@ def fetch_id(title, year, apikey):
 # Make sure we got something useful, and proceed.
     try:
         if data["success"] and len(data["results"]) > 1:
-            dupes = {}
-            for item in data.get("results"):
+            dupes = []
+            for item in data["results"]:
                 if item["title"].lower() == title.lower() and item["year"] == year:
-                    dupes[item["invid"]] = item
+                    dupes.append(item)
 
             if len(dupes) > 1:
                 print(json.dumps(dupes, indent=2))
@@ -67,10 +67,14 @@ def fetch_id(title, year, apikey):
                     count += 1
                 choice = int(input("Which option is correct? ")) - 1
                 info = dupes[choice]
-            else:
+            elif len(dupes) == 1:
                 info = dupes[0]
+            else:
+                info = data["results"][0]
         else:
             info = data["results"][0]
+        
+        print(info)
 
         return info.get("invid")
     
