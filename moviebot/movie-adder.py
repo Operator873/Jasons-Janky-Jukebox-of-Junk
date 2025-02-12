@@ -59,7 +59,7 @@ def fetch_id(title, year, apikey):
                     dupes.append(item)
 
             if len(dupes) > 1:
-                print(json.dumps(dupes, indent=2))
+                # print(json.dumps(dupes, indent=2))
                 count = 1
                 print("Multiple matches found!", file=sys.stdout)
                 for dupe in dupes:
@@ -73,8 +73,6 @@ def fetch_id(title, year, apikey):
                 info = data["results"][0]
         else:
             info = data["results"][0]
-        
-        print(info)
 
         return info.get("invid")
     
