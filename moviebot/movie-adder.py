@@ -63,7 +63,7 @@ def fetch_id(title, year, apikey):
                 count = 1
                 print("Multiple matches found!", file=sys.stdout)
                 for dupe in dupes:
-                    if dupe["year"] is None or dupe["image"] is None:
+                    if dupe["year"] is None or dupe["image"].endswith("None"):
                         continue
                     valid_dupes.append(dupe)
                 
