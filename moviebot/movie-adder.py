@@ -51,20 +51,17 @@ def fetch_id(title, year, apikey):
 
 # Make sure we got something useful, and proceed.
     try:
-        dupes = []
         if data["success"] and len(data["results"]) > 1:
+            dupes = {}
             for item in data.get("results"):
                 if item["title"].lower() == title.lower() and item["year"] == year:
-                    dupes.append(item)
+                    dupes[item["invid"]] = item
 
             if len(dupes) > 1:
                 count = 1
                 print("Multiple matches found!", file=sys.stdout)
                 for dupe in dupes:
-                    print(
-                        f"Option {count}: {dupe['invid']} - {dupe['title']} ({dupe['year']}) - {dupe['image']}",
-                        file=sys.stdout,
-                    )
+                    print(f"Option {count}: {dupe['invid']} - {dupe['title']} ({dupe['year']}) - {dupe['image']}")
                     count += 1
                 choice = int(input("Which option is correct? ")) - 1
                 info = dupes[choice]
@@ -77,7 +74,7 @@ def fetch_id(title, year, apikey):
     
     except Exception as e:
         print(f"Search for {title} failed! Dump follows: {str(e)} {data}")
-        raise SystemExit(1)
+        raise sys.exit(1)
 
 
 def add_movie(inv, apikey):
