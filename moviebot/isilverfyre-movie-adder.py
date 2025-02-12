@@ -10,7 +10,8 @@ import mysql.connector
 HOST = "xxx.xxx.xxx.xxx" # The IP of your database. "localhost" is also acceptable
 USER = "myCoolUser" # The username to connect to the database with
 PASSWD = "123abc" # The password for the above user
-DBASE = "myMovies" # The name of the database in MySQL/MariaDB to use
+DBASE = "Plex" # The name of the database in MySQL/MariaDB to use
+TABLE = "Movies" # The name of the table within the database to use
 
 # Unattended. Set to True to handle duplicate matching
 AUTO = False
@@ -121,8 +122,8 @@ def fetch_id(title, year, apikey):
 
 def add_movie(db, inv, apikey):
     c = db.cursor()
-    check = "SELECT tmdbID FROM movies WHERE tmdbID = %s"
-    insert = "INSERT INTO movies (tmdbID, movieTitle, movieImage, movieYear, movieGenre, movieDescription) VALUES (%s, %s, %s, %s, %s, %s)"
+    check = f"SELECT tmdbID FROM {TABLE} WHERE tmdbID = %s"
+    insert = f"INSERT INTO {TABLE} (tmdbID, movieTitle, movieImage, movieYear, movieGenre, movieDescription) VALUES (%s, %s, %s, %s, %s, %s)"
 
     c.execute(check, (inv,))
     exists = c.fetchone()
@@ -136,7 +137,7 @@ def add_movie(db, inv, apikey):
         
         data = xmit(query)
         info = data["results"][0]
-        values = (info["invid"], info["title"], info["image"], info["year"], info["genres"], info["overview"])
+        values = (info["invid"], info["title"], info["image"], int(info["year"]), info["genres"], info["overview"])
         try:
             c.execute(insert, values)
             db.commit()
@@ -176,6 +177,39 @@ def xmit(query, method="get"):
         print(f"{data.json()}")
 
 
+def check_table(db):
+    c = db.cursor()
+    try:
+        c.execute(f"SELECT * FROM {TABLE} LIMIT 1")
+    
+    except mysql.connector.Error as err:
+        if err.errno == 1146:
+            print(f"Movies database table '{TABLE}' not found! Creating in {DBASE}...")
+            create_table = f"""
+            CREATE TABLE {TABLE} (
+                tmdbID INT PRIMARY KEY,
+                movieTitle VARCHAR(255) NOT NULL,
+                movieImage VARCHAR(255),
+                movieYear YEAR(4),
+                movieGenre VARCHAR(255),
+                movieDescription TEXT
+            )
+            """
+            try:
+                c.execute(create_table)
+                db.commit()
+                print("Movies table created!")
+            except mysql.connector.Error as c_err:
+                print(f"Error creating table: {c_err}")
+                db.rollback()
+                raise SystemExit(1)
+        else:
+            print(f"Error checking table: {err}")
+            raise SystemExit(1)
+    finally:
+        c.close()
+
+
 def main():
     counter = 0
     skipped = 0
@@ -193,6 +227,10 @@ def main():
     db = connect_to_mysql()
     if not db:
         print("Unable to connect database!")
+        raise SystemExit(1)
+    
+    if not check_table(db):
+        print("Failure occured locating the movies table!")
         raise SystemExit(1)
 
     # Process items in the directory
