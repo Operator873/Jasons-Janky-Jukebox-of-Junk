@@ -6,33 +6,11 @@ import json
 import requests
 
 
-def main():
-    counter = 0
-    skipped = 0
-    # Obtain some facts
-    full_path = input("Enter full path to movies to add: ")
-    apikey = input("Enter your API key: ")
-
-    # Process items in the directory
-    inventory = fetch_movie_ids(full_path, apikey)
-
-    # Add the movies to MovieBot873
-    print("Processing results and adding to MovieBot873...")
-    for item in tqdm(inventory):
-        if add_movie(item, apikey):
-            counter += 1
-        else:
-            skipped += 1
-
-    # Terminate with feedback
-    print(f"Done! {counter} items added. {skipped} items were skipped due to failures.")
-
-
 def fetch_movie_ids(directory, apikey):
     # Gather up all files in the provided directory (this is recursive)
     print(f"Generating file list from {directory}")
     matches = []
-    for root, dir, files in os.walk(directory):
+    for _root, _dir, files in os.walk(directory):
         for f in tqdm(files):
             matches.append(f)
 
@@ -112,6 +90,28 @@ def xmit(query, method):
         return data.json()
     else:
         print(f"{data.json()}")
+
+
+def main():
+    counter = 0
+    skipped = 0
+    # Obtain some facts
+    full_path = input("Enter full path to movies to add: ")
+    apikey = input("Enter your API key: ")
+
+    # Process items in the directory
+    inventory = fetch_movie_ids(full_path, apikey)
+
+    # Add the movies to MovieBot873
+    print("Processing results and adding to MovieBot873...")
+    for item in tqdm(inventory):
+        if add_movie(item, apikey):
+            counter += 1
+        else:
+            skipped += 1
+
+    # Terminate with feedback
+    print(f"Done! {counter} items added. {skipped} items were skipped due to failures.")
 
 
 if __name__ == "__main__":
