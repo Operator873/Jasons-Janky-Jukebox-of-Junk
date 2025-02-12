@@ -3,6 +3,7 @@
 from tqdm import tqdm
 import os
 import sys
+import json
 import requests
 
 
@@ -28,9 +29,9 @@ def fetch_movie_ids(directory, apikey):
                 continue
 
             inv.append(str(id))
-        except:
+        except Exception as err:
             # Fail with some noise... probably a badly formatted file name.
-            print(f"{item} failed to split cleanly! Check file name format.")
+            print(f"{item} failed to split cleanly! Check file name format. {err}")
             continue
 
     return inv
@@ -58,6 +59,7 @@ def fetch_id(title, year, apikey):
                     dupes[item["invid"]] = item
 
             if len(dupes) > 1:
+                print(json.dumps(dupes, indent=2))
                 count = 1
                 print("Multiple matches found!", file=sys.stdout)
                 for dupe in dupes:
