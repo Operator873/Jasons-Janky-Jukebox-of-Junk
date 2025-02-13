@@ -20,7 +20,7 @@ APIKEY = None  # Replace with your 873gear API key (str)
 def connect_to_mysql():
     try:
         mydb = mysql.connector.connect(
-            host=HOST, user=USER, password=PASSWD, database=DBASE
+            host=HOST, user=USER, password=PASSWD, database=DBASE, charset="utf8mb4"
         )
         print("Database Connection successful!")
         return mydb
@@ -53,7 +53,7 @@ def check_table(db):
                 movieYear YEAR(4),
                 movieGenre VARCHAR(255),
                 movieDescription TEXT
-            )
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
             """
             try:
                 c.execute(create_table)
@@ -219,7 +219,7 @@ def main():
     check_table(db)
     
     # Process items in the file
-    print("reading")
+    print("Reading file...")
     with open(path, 'r') as f:
         inventory = json.loads(f.read())
 
