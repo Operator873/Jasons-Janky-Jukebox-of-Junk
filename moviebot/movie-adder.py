@@ -28,7 +28,7 @@ def fetch_movie_ids(directory, apikey):
                 print(f"{item} failed to produce a TMDB ID. Skipping...")
                 continue
 
-            inv.append(str(id))
+            inv.append(id)
         except Exception as err:
             # Fail with some noise... probably a badly formatted file name.
             print(f"{item} failed to split cleanly! Check file name format. {err}")
