@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import sys
 import json
+import sys
 
 import mysql.connector
 import requests
@@ -16,6 +16,7 @@ TABLE = "Movies"  # The name of the table within the database to use
 
 # 873gear API key
 APIKEY = None  # Replace with your 873gear API key (str)
+
 
 def connect_to_mysql():
     try:
@@ -39,11 +40,13 @@ def check_table(db):
         c.fetchone()
     except mysql.connector.Error as err:
         if err.errno == 1146:
-            check = input(f"Table '{TABLE}' not found in {DBASE}! Should I create it? ([Y]/n) ")
-            if check.lower() not in ['y', 'yes', '']:
+            check = input(
+                f"Table '{TABLE}' not found in {DBASE}! Should I create it? ([Y]/n) "
+            )
+            if check.lower() not in ["y", "yes", ""]:
                 print("Aborting run...")
                 sys.exit(1)
-            
+
             # Create table with defined schema that matches website
             create_table = f"""
             CREATE TABLE {TABLE} (
@@ -77,7 +80,11 @@ def check_for_duplicates(title, year, data):
             dupes = []
             # Check for duplicates and discard invalid or items missing info
             for item in data["results"]:
-                if item["title"].lower() == title.lower() and item["year"] == year and not item["image"].endswith("None"):
+                if (
+                    item["title"].lower() == title.lower()
+                    and item["year"] == year
+                    and not item["image"].endswith("None")
+                ):
                     dupes.append(item)
 
             # We found some dupes... Lets get input
@@ -85,7 +92,9 @@ def check_for_duplicates(title, year, data):
                 count = 1
                 print("Multiple matches found!", file=sys.stdout)
                 for dupe in dupes:
-                    print(f"Option {count}: {dupe['invid']} - {dupe['title']} ({dupe['year']}) - {dupe['image']}")
+                    print(
+                        f"Option {count}: {dupe['invid']} - {dupe['title']} ({dupe['year']}) - {dupe['image']}"
+                    )
                     count += 1
                 choice = int(input("Which option # is correct? (int) ")) - 1
                 result = dupes[choice]
@@ -97,13 +106,13 @@ def check_for_duplicates(title, year, data):
             result = data["results"][0]
         else:
             return None
-    
+
     except Exception as e:
         print(f"Search for {title} failed! Dump follows: {str(e)} {data}")
         sys.exit(1)
-    
+
     return result
-    
+
 
 def add_movie(db, movie, apikey):
     # Build a payload for 873gear to interrogate
@@ -137,7 +146,7 @@ def add_movie(db, movie, apikey):
     c = db.cursor()
     check = f"SELECT tmdbID FROM {TABLE} WHERE tmdbID = %s"
     insert = f"INSERT INTO {TABLE} (tmdbID, movieTitle, movieImage, movieYear, movieGenre, movieDescription) VALUES (%s, %s, %s, %s, %s, %s)"
-    
+
     # Check to see if item is already in the database
     c.execute(check, (info["invid"],))
     exists = c.fetchone()
@@ -161,7 +170,7 @@ def add_movie(db, movie, apikey):
             print(f"MySQL Error inserting: {values}! Rolling back... Error was: {e}")
         finally:
             c.close()
-    
+
     # Add to 873gear database
     query = {
         "invid": info["invid"],
@@ -173,11 +182,13 @@ def add_movie(db, movie, apikey):
     validate = xmit(query, "post")
     try:
         if validate["requestor"] not in validate["response"]:
-            print(f"Unexpected response from 873gear! Payload was: {json.dumps(validate, indent=2)}")
+            print(
+                f"Unexpected response from 873gear! Payload was: {json.dumps(validate, indent=2)}"
+            )
     except TypeError:
         print(f"Error updating 873gear database! {json.dumps(validate, indent=2)}")
         return False
-    
+
     return True
 
 
@@ -217,10 +228,10 @@ def main():
         sys.exit(1)
 
     check_table(db)
-    
+
     # Process items in the file
     print("Reading file...")
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         inventory = json.loads(f.read())
 
     # Add the movies to MovieBot873 and local database
