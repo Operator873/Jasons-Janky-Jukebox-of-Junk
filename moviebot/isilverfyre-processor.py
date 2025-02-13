@@ -36,7 +36,7 @@ def check_table(db):
     c = db.cursor()
     try:
         c.execute(f"SELECT * FROM {TABLE} LIMIT 1")
-
+        c.fetchone()
     except mysql.connector.Error as err:
         if err.errno == 1146:
             check = input(f"Table '{TABLE}' not found in {DBASE}! Should I create it? ([Y]/n) ")
@@ -116,12 +116,22 @@ def add_movie(db, movie, apikey):
     }
 
     # Process out response for duplicates
-    info = check_for_duplicates(movie["title"], movie["year"], xmit(payload))
+    data = check_for_duplicates(movie["title"], movie["year"], xmit(payload))
 
     # Sanity check
-    if not info:
-        print(f"Error occurred processing {movie}. Exitting...")
-        sys.exit(1)
+    if not data:
+        print(f"Error occurred processing {movie}. Skipping...")
+        return False
+
+    # Fetch detailed information for movie
+    query = {
+        "query": "bot",
+        "type": "movie",
+        "invid": data["invid"],
+        "apikey": apikey,
+    }
+
+    info = xmit(query)["results"][0]
 
     # Begin local database operations
     c = db.cursor()
@@ -148,7 +158,7 @@ def add_movie(db, movie, apikey):
             db.commit()
         except mysql.connector.Error as e:
             db.rollback()
-            print(f"MySQL Error! Rolling back... Error was: {e}")
+            print(f"MySQL Error inserting: {values}! Rolling back... Error was: {e}")
         finally:
             c.close()
     
@@ -161,8 +171,14 @@ def add_movie(db, movie, apikey):
 
     # Verify 873gear handled the transaction correctly.
     validate = xmit(query, "post")
-    if validate["requestor"] not in validate["response"]:
-        print(f"Unexpected response from 873gear! Payload was: {json.dumps(validate, indent=2)}")
+    try:
+        if validate["requestor"] not in validate["response"]:
+            print(f"Unexpected response from 873gear! Payload was: {json.dumps(validate, indent=2)}")
+    except TypeError:
+        print(f"Error updating 873gear database! {json.dumps(validate, indent=2)}")
+        return False
+    
+    return True
 
 
 def xmit(query, method="get"):
@@ -203,6 +219,7 @@ def main():
     check_table(db)
     
     # Process items in the file
+    print("reading")
     with open(path, 'r') as f:
         inventory = json.loads(f.read())
 
