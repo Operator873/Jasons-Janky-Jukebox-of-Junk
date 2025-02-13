@@ -40,7 +40,7 @@ def check_table(db):
     except mysql.connector.Error as err:
         if err.errno == 1146:
             check = input(f"Table '{TABLE}' not found in {DBASE}! Should I create it? ([Y]/n) ")
-            if not check.lower() in ['y', 'yes'] or not check == "":
+            if check.lower() not in ['y', 'yes', '']:
                 print("Aborting run...")
                 sys.exit(1)
             
@@ -187,6 +187,7 @@ def xmit(query, method="get"):
 def main():
     counter = 0
     skipped = 0
+    global APIKEY
     # Obtain some facts
     path = input("Fully qualified path to JSON file: ")
 
@@ -199,10 +200,8 @@ def main():
         print("Unable to connect database!")
         sys.exit(1)
 
-    if not check_table(db):
-        print("Failure occured locating the movies table!")
-        sys.exit(1)
-
+    check_table(db)
+    
     # Process items in the file
     with open(path, 'r') as f:
         inventory = json.loads(f.read())
