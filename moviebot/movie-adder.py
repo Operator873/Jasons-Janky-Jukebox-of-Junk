@@ -65,25 +65,27 @@ def fetch_id(title, year, apikey):
                     print(f"Option {count}: {dupe['invid']} - {dupe['title']} ({dupe['year']}) - {dupe['image']}")
                     count += 1
                 choice = int(input("Which option is correct? ")) - 1
-                return dupes[choice]
+                result = dupes[choice]
             elif len(dupes) == 1:
-                return dupes[0]
+                result = dupes[0]
             else:
-                return data["results"][0]
+                result = data["results"][0]
         elif data["success"] and len(data["results"]) == 1:
-            return data["results"][0]
+            result = data["results"][0]
         else:
             return None
     
     except Exception as e:
         print(f"Search for {title} failed! Dump follows: {str(e)} {data}")
         raise sys.exit(1)
+    
+    return result
 
 
 def add_movie(inv, apikey):
     # Build a query to add the title to the database of owners.
     query = {
-        "invid": inv,
+        "invid": inv["invid"],
         "add": "movie",
         "apikey": apikey,
     }
