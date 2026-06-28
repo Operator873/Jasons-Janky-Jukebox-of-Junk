@@ -1,49 +1,73 @@
 #!/usr/bin/env bash
 
-# This script automates creating an ansible user, adding the pubkey for the user
-# and finally adding an entry to /etc/sudoers.d for ansible
+# This script automates creating an ansible service user, configuring its 
+# authorized_keys file, and adding a validated passwordless sudoers entry.
 #
-# Before using, be sure to export your pubkey as a variable called MYKEY like:
-# export MYKEY=$(cat /home/ansible/id_rsa.pub)
+# Usage: export MYANSIBLEKEY="ssh-rsa AAAAB3..."
+#        ./bootstrap-ansible.sh <username>
 
-if [ $UID -eq 0 ]; then
-  # Check for running as root
-  echo "This script must be run as a user with sudo privileges but not as root."
-  exit 1
-elif [ $# -eq 0 ]; then
-  # Check a username was provided
-  echo "Please provide desire ansible username. Example: ./this-script.sh ansible"
-  exit 1
-elif [ -x "${MYKEY}" ]; then
-  # Check the pubkey was stored as a system variable
-  echo "Please set your Ansible user's pubkey as a varibale called MYANSIBLEKEY."
-  echo "Do this by executing: export MYANSIBLEKEY=\$(cat /home/yourAnsibleUser/.ssh/id_rsa.pub)}"
+set -euo pipefail
+
+TARGET_USER="${1:-}"
+
+# 1. Input Validation
+if [ "$(id -u)" -eq 0 ]; then
+  echo "[-] This script must be run via sudo, do not execute it directly as root."
   exit 1
 fi
 
-# Create the user
-sudo useradd -m -G wheel ${1}
-
-# Check to make sure home directory was generated during the user create process
-if [ ! -d "/home/${1}" ]; then
-  echo "Unknown error occurred during home directory creation. Check logs..."
+if [ -z "${TARGET_USER}" ]; then
+  echo "[-] Missing target username. Example: ${0} ansible"
   exit 1
 fi
 
-# Start creating .ssh directory and echo pubkey into authorized_keys file.
-# Set appropriate permissions and ownership
-echo "$MYKEY" > /tmp/setup_tmpfile
-sudo mkdir /home/${1}/.ssh
-sudo mv /tmp/setup_tmpfile /home/${1}/.ssh/authorized_keys
-sudo chmod 600 /home/${1}/.ssh/authorized_keys
-sudo chmod 700 /home/${1}/.ssh
-sudo chown -R ${1}:${1} /home/${1}/.ssh
+if [ -z "${MYANSIBLEKEY:-}" ]; then
+  echo "[-] Environment variable 'MYANSIBLEKEY' is empty or undefined."
+  echo "    Execute: export MYANSIBLEKEY=\"\$(cat ~/.ssh/id_ed25519.pub)\""
+  exit 1
+fi
 
-echo "User ${1} sucessfully created and SSH key added."
+echo "[+] Bootstrapping configuration for user: ${TARGET_USER}"
 
+# 2. Secure User Creation (Locked Password Account)
+# -p '!' explicitly locks password authentication natively at creation
+sudo useradd -m -G wheel -s /bin/bash -p '!' "${TARGET_USER}"
 
-echo "${1} ALL=(ALL) NOPASSWD:ALL" > /tmp/setup_sudoer
-sudo chmod 644 /tmp/setup_sudoer
-sudo chown root:root /tmp/setup_sudoer
-sudo mv /tmp/setup_sudoer /etc/sudoers.d/${1}
-echo "sudoers.d drop-in added."
+# Confirm home directory layout
+HOME_DIR="/home/${TARGET_USER}"
+if [ ! -d "${HOME_DIR}" ]; then
+  echo "[-] Target home directory structure failed to generate."
+  exit 1
+fi
+
+# 3. Secure Key Placement (Bypassing insecure world-readable /tmp)
+# Create the directory first with absolute restricted mask states
+sudo mkdir -p "${HOME_DIR}/.ssh"
+sudo chmod 700 "${HOME_DIR}/.ssh"
+
+# Stream key string directly into target without dropping intermediate temp files
+echo "${MYANSIBLEKEY}" | sudo tee "${HOME_DIR}/.ssh/authorized_keys" > /dev/null
+sudo chmod 600 "${HOME_DIR}/.ssh/authorized_keys"
+sudo chown -R "${TARGET_USER}:${TARGET_USER}" "${HOME_DIR}/.ssh"
+
+echo "[+] SSH Key mapping applied successfully."
+
+# 4. Validated Sudoers Drop-in via Secure Root Temp Files
+SUDO_TMP=$(mktemp /tmp/sudoer_setup.XXXXXX)
+chmod 600 "${SUDO_TMP}"
+
+echo "${TARGET_USER} ALL=(ALL) NOPASSWD:ALL" > "${SUDO_TMP}"
+
+# Structural syntax validation check via visudo compilation engine
+if sudo visudo -cf "${SUDO_TMP}" > /dev/null 2>&1; then
+  sudo mv "${SUDO_TMP}" "/etc/sudoers.d/${TARGET_USER}"
+  sudo chmod 0440 "/etc/sudoers.d/${TARGET_USER}"
+  sudo chown root:root "/etc/sudoers.d/${TARGET_USER}"
+  echo "[+] Validated sudoers drop-in applied."
+else
+  echo "[-] Sudoers syntax generation error encountered. Transaction aborted."
+  rm -f "${SUDO_TMP}"
+  exit 1
+fi
+
+echo "[+] System configuration successfully completed."
